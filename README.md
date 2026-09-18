@@ -51,11 +51,13 @@ barcode and it's added the same way, with a green/red flash confirming
 each read; only what's actually visible in the feed can be detected
 (anything cropped out of frame is ignored). Tap the gear icon (top-left of
 the feed) to adjust the delay between accepted scans — useful if it's
-firing faster or slower than you'd like while moving between items — and
-the ✕ (top-right) to close it. This button only appears when the browser
-supports it (Chromium-based browsers and the Android app; not Firefox or
-Safari) — everywhere else, the keyboard-wedge and manual entry above still
-work exactly as before.
+firing faster or slower than you'd like while moving between items — the
+🔦 next to it toggles your flashlight for scanning in the dark (only shown
+on devices whose camera actually supports it), and the ✕ (top-right)
+closes the feed. This button only appears when the browser supports it
+(Chromium-based browsers and the Android app; not Firefox or Safari) —
+everywhere else, the keyboard-wedge and manual entry above still work
+exactly as before.
 
 The header, the banner/camera feed, and the manual-entry row all stay
 pinned at the top of the screen as you scroll — however many items pile up

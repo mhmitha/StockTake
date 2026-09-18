@@ -47,6 +47,11 @@ public class MainActivity extends android.app.Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        // WebView defaults to requiring a user gesture before any unmuted
+        // media can play; our scan beep is triggered from JS (a scanner
+        // input event, a debounce timer, or the camera's detection loop),
+        // none of which WebView recognizes as a gesture on its own.
+        settings.setMediaPlaybackRequiresUserGesture(false);
 
         final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))

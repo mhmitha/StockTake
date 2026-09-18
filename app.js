@@ -37,6 +37,7 @@
   const cameraCloseBtn = qs('camera-close-btn');
   const cameraSettingsBtn = qs('camera-settings-btn');
   const cameraSettingsPanel = qs('camera-settings-panel');
+  const cameraTorchBtn = qs('camera-torch-btn');
   const cameraDelayRange = qs('camera-delay-range');
   const cameraDelayValue = qs('camera-delay-value');
 
@@ -112,6 +113,24 @@
   }
 
   const errorBeep = () => beep(220, 220, 'square');
+
+  // Browsers block the first unmuted play() on a media element unless it
+  // happens inside a real user gesture — a scan (even from a hardware
+  // trigger) arrives via a debounced setTimeout/keydown callback and a
+  // camera detection tick arrives via setInterval, neither of which count.
+  // Unlock successAudio here, directly inside the Start/Resume click, by
+  // playing and immediately pausing it — after that, browsers treat the
+  // page as unlocked for the rest of the session. (ensureAudioCtx() does
+  // the equivalent for the separate Web Audio API used by errorBeep.)
+  function unlockAudio() {
+    ensureAudioCtx();
+    try {
+      successAudio.play().then(() => {
+        successAudio.pause();
+        successAudio.currentTime = 0;
+      }).catch(() => { /* ignore */ });
+    } catch (e) { /* ignore */ }
+  }
 
   // ---------- Persistence ----------
   function saveSession() {
@@ -362,6 +381,7 @@
   let cameraScanBusy = false;
   let cameraCooldownUntil = 0;
   let cameraScanDelayMs = loadCameraDelayPref();
+  let torchOn = false;
 
   // Offscreen canvas used to crop each frame down to exactly what's visibly
   // shown (object-fit: cover clips the video element) before detecting, so
@@ -419,6 +439,7 @@
       cameraStatus.textContent = 'Point the camera at a barcode';
       cameraCooldownUntil = 0;
       cameraScanTimer = setInterval(scanCameraFrame, 200);
+      setUpTorchForStream();
     } catch (err) {
       cameraStatus.textContent = 'Camera unavailable — check camera permission and try again.';
     }
@@ -437,7 +458,48 @@
     cameraSettingsPanel.classList.add('hidden');
     cameraPanel.classList.add('hidden');
     feedbackBanner.classList.remove('hidden');
+    torchOn = false;
+    cameraTorchBtn.classList.add('hidden');
+    cameraTorchBtn.classList.remove('torch-on');
     if (cameraSupported()) cameraScanBtn.classList.remove('hidden');
+  }
+
+  // Torch (flashlight) control is a non-standard extension to the track
+  // constraints API — only some devices/browsers expose it, and only on a
+  // rear camera that physically has a flash, so this must be checked fresh
+  // against the actual track each time the camera opens.
+  function setUpTorchForStream() {
+    torchOn = false;
+    cameraTorchBtn.classList.remove('torch-on');
+    cameraTorchBtn.classList.add('hidden');
+    if (!cameraStream) return;
+    const track = cameraStream.getVideoTracks()[0];
+    if (!track || typeof track.getCapabilities !== 'function') return;
+    let capabilities;
+    try {
+      capabilities = track.getCapabilities();
+    } catch (e) {
+      return;
+    }
+    if (capabilities && capabilities.torch) {
+      cameraTorchBtn.classList.remove('hidden');
+    }
+  }
+
+  function toggleTorch() {
+    if (!cameraStream) return;
+    const track = cameraStream.getVideoTracks()[0];
+    if (!track) return;
+    const next = !torchOn;
+    track.applyConstraints({ advanced: [{ torch: next }] })
+      .then(() => {
+        torchOn = next;
+        cameraTorchBtn.classList.toggle('torch-on', torchOn);
+      })
+      .catch(() => {
+        // Some devices report torch capability but reject the constraint —
+        // leave the state/UI unchanged rather than showing a false "on".
+      });
   }
 
   function triggerCameraFlash(cls) {
@@ -506,6 +568,8 @@
   cameraSettingsBtn.addEventListener('click', () => {
     cameraSettingsPanel.classList.toggle('hidden');
   });
+
+  cameraTorchBtn.addEventListener('click', toggleTorch);
 
   cameraDelayRange.addEventListener('input', () => {
     const ms = parseInt(cameraDelayRange.value, 10);
@@ -616,7 +680,7 @@
 
   // ---------- Start / resume / done ----------
   startBtn.addEventListener('click', () => {
-    ensureAudioCtx();
+    unlockAudio();
     showScreen(scanScreen);
     scanInput.focus();
   });
@@ -624,7 +688,7 @@
   resumeBtn.addEventListener('click', () => {
     const saved = loadSession();
     if (saved) restoreSession(saved);
-    ensureAudioCtx();
+    unlockAudio();
     showScreen(scanScreen);
     scanInput.focus();
   });

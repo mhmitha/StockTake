@@ -452,6 +452,16 @@ body {
   left: 0.6rem;
 }
 
+.camera-torch-btn {
+  left: 3.1rem;
+}
+
+.camera-torch-btn.torch-on {
+  background: #ffd633;
+  border-color: #ffd633;
+  color: #1a1400;
+}
+
 .camera-close-btn {
   right: 0.6rem;
 }
