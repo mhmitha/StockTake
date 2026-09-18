@@ -29,6 +29,12 @@
   const manualAddBtn = qs('manual-add-btn');
   const tableBody = qs('scan-table-body');
   const emptyState = qs('empty-state');
+  const cameraScanBtn = qs('camera-scan-btn');
+  const cameraOverlay = qs('camera-overlay');
+  const cameraVideo = qs('camera-video');
+  const cameraFlash = qs('camera-flash');
+  const cameraStatus = qs('camera-status');
+  const cameraCloseBtn = qs('camera-close-btn');
 
   // Done screen
   const doneSummary = qs('done-summary');
@@ -324,6 +330,119 @@
     }
   });
 
+  // ---------- Camera scanning ----------
+  // Uses the native Shape Detection API (BarcodeDetector), available in
+  // Chromium-based browsers and Android WebView — no bundled library
+  // needed. Where it's unsupported (Firefox, Safari) the button stays
+  // hidden and the keyboard-wedge/manual paths above are unaffected.
+  let cameraStream = null;
+  let barcodeDetector = null;
+  let cameraScanTimer = null;
+  let cameraScanBusy = false;
+  let lastCameraValue = null;
+  let lastCameraValueAt = 0;
+
+  function cameraSupported() {
+    return 'BarcodeDetector' in window &&
+      !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  if (cameraSupported()) {
+    cameraScanBtn.classList.remove('hidden');
+  }
+
+  async function openCameraScanner() {
+    cameraOverlay.classList.remove('hidden');
+    cameraStatus.textContent = 'Starting camera…';
+    try {
+      if (!barcodeDetector) {
+        try {
+          barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+        } catch (e) {
+          barcodeDetector = new BarcodeDetector();
+        }
+      }
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false,
+      });
+      cameraVideo.srcObject = cameraStream;
+      await cameraVideo.play();
+      cameraStatus.textContent = 'Point the camera at a barcode';
+      lastCameraValue = null;
+      cameraScanTimer = setInterval(scanCameraFrame, 200);
+    } catch (err) {
+      cameraStatus.textContent = 'Camera unavailable — check camera permission and try again.';
+    }
+  }
+
+  function closeCameraScanner() {
+    if (cameraScanTimer) {
+      clearInterval(cameraScanTimer);
+      cameraScanTimer = null;
+    }
+    if (cameraStream) {
+      for (const track of cameraStream.getTracks()) track.stop();
+      cameraStream = null;
+    }
+    cameraVideo.srcObject = null;
+    cameraOverlay.classList.add('hidden');
+  }
+
+  function triggerCameraFlash(cls) {
+    cameraFlash.classList.remove('flash-success', 'flash-error');
+    void cameraFlash.offsetWidth; // restart CSS animation
+    cameraFlash.classList.add(cls);
+  }
+
+  function handleCameraDetection(rawValue) {
+    const value = rawValue.trim();
+    const wasValid = EAN_RE.test(value);
+    processScan(value);
+    if (wasValid) {
+      cameraStatus.textContent = `Added ${value} — now ${items.get(value)}`;
+      triggerCameraFlash('flash-success');
+    } else {
+      cameraStatus.textContent = `"${value}" doesn't look like a valid EAN — ignored`;
+      triggerCameraFlash('flash-error');
+    }
+  }
+
+  async function scanCameraFrame() {
+    if (cameraScanBusy || !cameraStream) return;
+    cameraScanBusy = true;
+    try {
+      const codes = await barcodeDetector.detect(cameraVideo);
+      if (codes && codes.length > 0) {
+        const value = (codes[0].rawValue || '').trim();
+        const now = Date.now();
+        if (value && !(value === lastCameraValue && now - lastCameraValueAt < 1500)) {
+          lastCameraValue = value;
+          lastCameraValueAt = now;
+          handleCameraDetection(value);
+        }
+      }
+    } catch (e) {
+      // Transient detection errors (motion blur, nothing in frame) are
+      // normal — ignore and keep trying on the next tick.
+    } finally {
+      cameraScanBusy = false;
+    }
+  }
+
+  cameraScanBtn.addEventListener('click', openCameraScanner);
+  cameraCloseBtn.addEventListener('click', closeCameraScanner);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !cameraOverlay.classList.contains('hidden')) {
+      closeCameraScanner();
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) closeCameraScanner();
+  });
+
   // ---------- Confirm overlay ----------
   function openConfirm(message, onConfirm) {
     confirmMessage.textContent = message;
@@ -392,6 +511,7 @@
   }
 
   function finishStockTake() {
+    closeCameraScanner();
     const lines = items.size;
     let units = 0;
     for (const q of items.values()) units += q;

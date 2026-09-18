@@ -48,6 +48,8 @@
     <!-- Hidden always-focused input that the barcode scanner "types" into -->
     <input type="text" id="scan-input" class="scan-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none">
 
+    <button id="camera-scan-btn" class="btn btn-secondary camera-scan-btn hidden">Scan with Camera</button>
+
     <div class="manual-add">
       <button id="manual-toggle" class="btn btn-link">+ Enter an EAN manually</button>
       <div id="manual-form" class="manual-form hidden">
@@ -88,6 +90,15 @@
         <button id="confirm-ok" class="btn btn-danger">Confirm</button>
       </div>
     </div>
+  </div>
+
+  <!-- Camera scanning overlay -->
+  <div id="camera-overlay" class="camera-overlay hidden">
+    <video id="camera-video" class="camera-video" autoplay playsinline muted></video>
+    <div class="camera-viewfinder"></div>
+    <div id="camera-flash" class="camera-flash"></div>
+    <div id="camera-status" class="camera-status">Point the camera at a barcode</div>
+    <button id="camera-close-btn" class="camera-close" type="button" aria-label="Close camera">&#10005;</button>
   </div>
 
   <script src="vendor/xlsx.full.min.js"></script>

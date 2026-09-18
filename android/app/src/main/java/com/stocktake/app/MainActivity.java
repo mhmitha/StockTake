@@ -1,7 +1,9 @@
 package com.stocktake.app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +11,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -27,7 +31,10 @@ import java.io.OutputStream;
 
 public class MainActivity extends android.app.Activity {
 
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 1001;
+
     private WebView webView;
+    private PermissionRequest pendingCameraPermissionRequest;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -52,8 +59,46 @@ public class MainActivity extends android.app.Activity {
             }
         });
 
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                boolean wantsCamera = false;
+                for (String resource : request.getResources()) {
+                    if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) {
+                        wantsCamera = true;
+                        break;
+                    }
+                }
+                if (!wantsCamera) {
+                    request.deny();
+                    return;
+                }
+                if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    request.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                } else {
+                    pendingCameraPermissionRequest = request;
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
+                }
+            }
+        });
+
         webView.addJavascriptInterface(new NativeBridge(), "AndroidStockTake");
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != CAMERA_PERMISSION_REQUEST_CODE || pendingCameraPermissionRequest == null) {
+            return;
+        }
+        boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        if (granted) {
+            pendingCameraPermissionRequest.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+        } else {
+            pendingCameraPermissionRequest.deny();
+        }
+        pendingCameraPermissionRequest = null;
     }
 
     @Override
