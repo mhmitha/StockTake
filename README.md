@@ -57,6 +57,10 @@ supports it (Chromium-based browsers and the Android app; not Firefox or
 Safari) — everywhere else, the keyboard-wedge and manual entry above still
 work exactly as before.
 
+The header, the banner/camera feed, and the manual-entry row all stay
+pinned at the top of the screen as you scroll — however many items pile up
+in the list below, your scanning controls never scroll out of reach.
+
 ## Correcting mistakes
 
 Every row has `−` / `+` buttons to adjust its quantity, and a `✕` to remove

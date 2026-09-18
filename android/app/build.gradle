@@ -28,7 +28,7 @@ dependencies {
 // instead of maintaining a second copy by hand.
 tasks.register('copyWebAssets', Copy) {
     from(rootProject.file('..')) {
-        include 'index.html', 'styles.css', 'app.js', 'vendor/xlsx.full.min.js'
+        include 'index.html', 'styles.css', 'app.js', 'vendor/xlsx.full.min.js', 'sounds/beep-success.wav'
     }
     into 'src/main/assets'
 }

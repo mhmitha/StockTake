@@ -96,7 +96,21 @@
     osc.stop(now + durationMs / 1000 + 0.02);
   }
 
-  const successBeep = () => beep(1000, 90, 'sine');
+  // Real handheld scanners beep with a short, loud, buzzy tone from a piezo
+  // driven by a square wave — a synthesized pure sine came across as a thin
+  // "ping" rather than a scanner beep, so this is a pre-rendered sample
+  // (band-limited square wave, ~2.7kHz, normalized near full scale) instead.
+  const successAudio = new Audio('sounds/beep-success.wav');
+  successAudio.preload = 'auto';
+  successAudio.volume = 1.0;
+
+  function successBeep() {
+    try {
+      successAudio.currentTime = 0;
+      successAudio.play().catch(() => { /* blocked until a user gesture; harmless to skip */ });
+    } catch (e) { /* ignore */ }
+  }
+
   const errorBeep = () => beep(220, 220, 'square');
 
   // ---------- Persistence ----------
