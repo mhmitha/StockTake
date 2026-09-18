@@ -44,11 +44,18 @@ for fixing a bad scan or testing without a scanner.
 ## Scanning with a camera instead
 
 If there's no handheld scanner, tap **Scan with Camera** to scan with a
-phone or webcam instead — point it at a barcode and it's added the same way,
-with a green/red flash confirming each read. This button only appears when
-the browser supports it (Chromium-based browsers and the Android app; not
-Firefox or Safari) — everywhere else, the keyboard-wedge and manual entry
-above still work exactly as before.
+phone or webcam instead. The live feed opens inline, in place of the
+feedback banner, taking up about half the screen — the header stats,
+Complete button and table all stay visible around it. Point it at a
+barcode and it's added the same way, with a green/red flash confirming
+each read; only what's actually visible in the feed can be detected
+(anything cropped out of frame is ignored). Tap the gear icon (top-left of
+the feed) to adjust the delay between accepted scans — useful if it's
+firing faster or slower than you'd like while moving between items — and
+the ✕ (top-right) to close it. This button only appears when the browser
+supports it (Chromium-based browsers and the Android app; not Firefox or
+Safari) — everywhere else, the keyboard-wedge and manual entry above still
+work exactly as before.
 
 ## Correcting mistakes
 

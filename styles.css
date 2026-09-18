@@ -359,12 +359,19 @@ body {
   margin-top: 1rem;
 }
 
-/* ---------- Camera scanning overlay ---------- */
-.camera-overlay {
-  position: fixed;
-  inset: 0;
+/* ---------- Camera scanning panel (inline, upper section) ---------- */
+.scan-top-section {
+  margin-bottom: 0.8rem;
+}
+
+.camera-panel {
+  position: relative;
+  width: 100%;
+  height: 50vh;
+  min-height: 240px;
+  max-height: 440px;
   background: #000;
-  z-index: 30;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -372,6 +379,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .camera-viewfinder {
@@ -379,8 +387,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(80%, 420px);
-  height: 120px;
+  width: 78%;
+  height: 38%;
   border: 3px solid rgba(255, 255, 255, 0.85);
   border-radius: 12px;
   box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.35);
@@ -411,29 +419,61 @@ body {
 
 .camera-status {
   position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: 2rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.6rem;
   text-align: center;
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
   pointer-events: none;
 }
 
-.camera-close {
+.camera-icon-btn {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.6rem;
-  height: 2.6rem;
+  top: 0.6rem;
+  width: 2.3rem;
+  height: 2.3rem;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.4);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  line-height: 1;
   cursor: pointer;
+  z-index: 2;
+}
+
+.camera-settings-btn {
+  left: 0.6rem;
+}
+
+.camera-close-btn {
+  right: 0.6rem;
+}
+
+.camera-settings-panel {
+  position: absolute;
+  top: 3.1rem;
+  left: 0.6rem;
+  width: min(250px, 80%);
+  background: rgba(20, 24, 36, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  z-index: 2;
+}
+
+.camera-settings-panel label {
+  display: block;
+  color: #fff;
+  font-size: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.camera-settings-panel input[type="range"] {
+  width: 100%;
 }
 
 @media (max-width: 480px) {

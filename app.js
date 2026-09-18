@@ -30,11 +30,15 @@
   const tableBody = qs('scan-table-body');
   const emptyState = qs('empty-state');
   const cameraScanBtn = qs('camera-scan-btn');
-  const cameraOverlay = qs('camera-overlay');
+  const cameraPanel = qs('camera-panel');
   const cameraVideo = qs('camera-video');
   const cameraFlash = qs('camera-flash');
   const cameraStatus = qs('camera-status');
   const cameraCloseBtn = qs('camera-close-btn');
+  const cameraSettingsBtn = qs('camera-settings-btn');
+  const cameraSettingsPanel = qs('camera-settings-panel');
+  const cameraDelayRange = qs('camera-delay-range');
+  const cameraDelayValue = qs('camera-delay-value');
 
   // Done screen
   const doneSummary = qs('done-summary');
@@ -335,12 +339,39 @@
   // Chromium-based browsers and Android WebView — no bundled library
   // needed. Where it's unsupported (Firefox, Safari) the button stays
   // hidden and the keyboard-wedge/manual paths above are unaffected.
+  const CAMERA_DELAY_KEY = 'stocktake_camera_delay_ms';
+  const CAMERA_DELAY_DEFAULT = 1500;
+
   let cameraStream = null;
   let barcodeDetector = null;
   let cameraScanTimer = null;
   let cameraScanBusy = false;
-  let lastCameraValue = null;
-  let lastCameraValueAt = 0;
+  let cameraCooldownUntil = 0;
+  let cameraScanDelayMs = loadCameraDelayPref();
+
+  // Offscreen canvas used to crop each frame down to exactly what's visibly
+  // shown (object-fit: cover clips the video element) before detecting, so
+  // a barcode outside the visible frame is never picked up.
+  const cropCanvas = document.createElement('canvas');
+  const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
+
+  function loadCameraDelayPref() {
+    try {
+      const n = parseInt(localStorage.getItem(CAMERA_DELAY_KEY), 10);
+      if (!isNaN(n) && n >= 300 && n <= 5000) return n;
+    } catch (e) { /* ignore */ }
+    return CAMERA_DELAY_DEFAULT;
+  }
+
+  function saveCameraDelayPref(ms) {
+    try { localStorage.setItem(CAMERA_DELAY_KEY, String(ms)); } catch (e) { /* ignore */ }
+  }
+
+  function setCameraDelay(ms) {
+    cameraScanDelayMs = ms;
+    cameraDelayRange.value = String(ms);
+    cameraDelayValue.textContent = (ms / 1000).toFixed(1) + 's';
+  }
 
   function cameraSupported() {
     return 'BarcodeDetector' in window &&
@@ -350,9 +381,12 @@
   if (cameraSupported()) {
     cameraScanBtn.classList.remove('hidden');
   }
+  setCameraDelay(cameraScanDelayMs);
 
   async function openCameraScanner() {
-    cameraOverlay.classList.remove('hidden');
+    feedbackBanner.classList.add('hidden');
+    cameraScanBtn.classList.add('hidden');
+    cameraPanel.classList.remove('hidden');
     cameraStatus.textContent = 'Starting camera…';
     try {
       if (!barcodeDetector) {
@@ -369,7 +403,7 @@
       cameraVideo.srcObject = cameraStream;
       await cameraVideo.play();
       cameraStatus.textContent = 'Point the camera at a barcode';
-      lastCameraValue = null;
+      cameraCooldownUntil = 0;
       cameraScanTimer = setInterval(scanCameraFrame, 200);
     } catch (err) {
       cameraStatus.textContent = 'Camera unavailable — check camera permission and try again.';
@@ -386,7 +420,10 @@
       cameraStream = null;
     }
     cameraVideo.srcObject = null;
-    cameraOverlay.classList.add('hidden');
+    cameraSettingsPanel.classList.add('hidden');
+    cameraPanel.classList.add('hidden');
+    feedbackBanner.classList.remove('hidden');
+    if (cameraSupported()) cameraScanBtn.classList.remove('hidden');
   }
 
   function triggerCameraFlash(cls) {
@@ -408,18 +445,37 @@
     }
   }
 
+  // Mirrors CSS object-fit: cover so the detected region matches exactly
+  // what's visible on screen, in the video's native pixel coordinates.
+  function computeCoverCrop(videoW, videoH, boxW, boxH) {
+    const scale = Math.max(boxW / videoW, boxH / videoH);
+    const cropW = boxW / scale;
+    const cropH = boxH / scale;
+    const cropX = (videoW - cropW) / 2;
+    const cropY = (videoH - cropH) / 2;
+    return { cropX, cropY, cropW, cropH };
+  }
+
   async function scanCameraFrame() {
     if (cameraScanBusy || !cameraStream) return;
+    if (Date.now() < cameraCooldownUntil) return;
+    const videoW = cameraVideo.videoWidth;
+    const videoH = cameraVideo.videoHeight;
+    if (!videoW || !videoH) return;
     cameraScanBusy = true;
     try {
-      const codes = await barcodeDetector.detect(cameraVideo);
+      const box = cameraVideo.getBoundingClientRect();
+      const { cropX, cropY, cropW, cropH } = computeCoverCrop(videoW, videoH, box.width, box.height);
+      cropCanvas.width = Math.max(1, Math.round(cropW));
+      cropCanvas.height = Math.max(1, Math.round(cropH));
+      cropCtx.drawImage(cameraVideo, cropX, cropY, cropW, cropH, 0, 0, cropCanvas.width, cropCanvas.height);
+
+      const codes = await barcodeDetector.detect(cropCanvas);
       if (codes && codes.length > 0) {
         const value = (codes[0].rawValue || '').trim();
-        const now = Date.now();
-        if (value && !(value === lastCameraValue && now - lastCameraValueAt < 1500)) {
-          lastCameraValue = value;
-          lastCameraValueAt = now;
+        if (value) {
           handleCameraDetection(value);
+          cameraCooldownUntil = Date.now() + cameraScanDelayMs;
         }
       }
     } catch (e) {
@@ -433,8 +489,18 @@
   cameraScanBtn.addEventListener('click', openCameraScanner);
   cameraCloseBtn.addEventListener('click', closeCameraScanner);
 
+  cameraSettingsBtn.addEventListener('click', () => {
+    cameraSettingsPanel.classList.toggle('hidden');
+  });
+
+  cameraDelayRange.addEventListener('input', () => {
+    const ms = parseInt(cameraDelayRange.value, 10);
+    setCameraDelay(ms);
+    saveCameraDelayPref(ms);
+  });
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !cameraOverlay.classList.contains('hidden')) {
+    if (e.key === 'Escape' && !cameraPanel.classList.contains('hidden')) {
       closeCameraScanner();
     }
   });
