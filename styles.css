@@ -1,0 +1,359 @@
+:root {
+  --bg: #0f1420;
+  --surface: #1a2133;
+  --surface-2: #232c42;
+  --border: #2e3852;
+  --text: #eef1f8;
+  --text-dim: #97a1b8;
+  --accent: #4f8cff;
+  --accent-dark: #2f68d6;
+  --good: #2ecc71;
+  --good-dim: #1c5c37;
+  --bad: #ff5c5c;
+  --bad-dim: #5c2323;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hidden { display: none !important; }
+
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.8rem 1.4rem;
+  transition: transform 0.05s ease, opacity 0.15s ease;
+  font-family: inherit;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent-dark); }
+
+.btn-huge {
+  font-size: 1.4rem;
+  padding: 1.4rem 2.4rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-danger {
+  background: var(--bad);
+  color: white;
+}
+
+.btn-danger-outline {
+  background: transparent;
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--accent);
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+}
+
+.btn-complete {
+  background: var(--good);
+  color: #06210f;
+  padding: 0.7rem 1.3rem;
+  font-size: 1.05rem;
+}
+.btn-complete:hover { opacity: 0.9; }
+.btn-complete:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ---------- Start / Done screens ---------- */
+.start-wrap {
+  margin: auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+.start-wrap h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  margin-bottom: 2.2rem;
+  font-size: 1.05rem;
+}
+
+.resume-banner {
+  margin-top: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+}
+
+.resume-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 0.8rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Scan screen ---------- */
+#scan-screen {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem 1rem 3rem;
+  align-items: stretch;
+}
+
+.scan-header {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.6rem 0.2rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.scan-header .btn-complete {
+  margin-left: auto;
+}
+
+.feedback-banner {
+  border-radius: var(--radius);
+  padding: 1.4rem 1.2rem;
+  text-align: center;
+  margin-bottom: 0.8rem;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.feedback-ean {
+  font-size: 1.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  word-break: break-all;
+}
+
+.feedback-msg {
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+  font-size: 0.95rem;
+}
+
+.feedback-banner.feedback-idle {
+  border-color: var(--border);
+}
+
+.feedback-banner.feedback-success {
+  border-color: var(--good);
+  background: var(--good-dim);
+}
+.feedback-banner.feedback-success .feedback-msg { color: #b9f2cf; }
+
+.feedback-banner.feedback-error {
+  border-color: var(--bad);
+  background: var(--bad-dim);
+}
+.feedback-banner.feedback-error .feedback-msg { color: #ffd0d0; }
+
+/* Scanner input: kept on-screen (not display:none) so mobile browsers
+   will actually focus it, but visually minimized. */
+.scan-input {
+  position: absolute;
+  opacity: 0;
+  height: 1px;
+  width: 1px;
+  pointer-events: none;
+}
+
+.manual-add {
+  margin-bottom: 0.6rem;
+}
+
+.manual-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.manual-form input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+}
+
+.scan-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.scan-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.scan-table td {
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.scan-table tr.row-flash {
+  animation: flash-row 1s ease;
+}
+
+@keyframes flash-row {
+  0% { background: var(--good-dim); }
+  100% { background: transparent; }
+}
+
+.ean-cell {
+  word-break: break-all;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.qty-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.qty-value {
+  min-width: 1.6rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.row-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.2rem 0.5rem;
+}
+.row-remove:hover { color: var(--bad); }
+
+.empty-state {
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+/* ---------- Confirm overlay ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 1rem;
+}
+
+.confirm-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+@media (max-width: 480px) {
+  .start-wrap h1 { font-size: 1.8rem; }
+  .feedback-ean { font-size: 1.4rem; }
+}

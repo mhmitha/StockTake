@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Stock Take</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- START SCREEN -->
+  <section id="start-screen" class="screen">
+    <div class="start-wrap">
+      <h1>Stock Take</h1>
+      <p class="subtitle">Scan every item. We'll count duplicates for you.</p>
+      <button id="start-btn" class="btn btn-primary btn-huge">Start Stock Take</button>
+
+      <div id="resume-banner" class="resume-banner hidden">
+        <p>You have an unfinished stock take (<span id="resume-count">0</span> lines).</p>
+        <div class="resume-actions">
+          <button id="resume-btn" class="btn btn-secondary">Resume it</button>
+          <button id="discard-btn" class="btn btn-danger-outline">Discard &amp; start new</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCANNING SCREEN -->
+  <section id="scan-screen" class="screen hidden">
+    <header class="scan-header">
+      <div class="stat">
+        <span class="stat-value" id="stat-lines">0</span>
+        <span class="stat-label">EANs</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-units">0</span>
+        <span class="stat-label">Units</span>
+      </div>
+      <button id="complete-btn" class="btn btn-complete">Complete</button>
+    </header>
+
+    <div id="feedback-banner" class="feedback-banner feedback-idle">
+      <div class="feedback-ean" id="feedback-ean">Ready to scan&hellip;</div>
+      <div class="feedback-msg" id="feedback-msg">Aim the scanner and pull the trigger</div>
+    </div>
+
+    <!-- Hidden always-focused input that the barcode scanner "types" into -->
+    <input type="text" id="scan-input" class="scan-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none">
+
+    <div class="manual-add">
+      <button id="manual-toggle" class="btn btn-link">+ Enter an EAN manually</button>
+      <div id="manual-form" class="manual-form hidden">
+        <input type="text" id="manual-input" placeholder="Type EAN, then Enter" inputmode="numeric">
+        <button id="manual-add-btn" class="btn btn-secondary">Add</button>
+      </div>
+    </div>
+
+    <table class="scan-table">
+      <thead>
+        <tr>
+          <th>EAN</th>
+          <th>Qty</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="scan-table-body">
+      </tbody>
+    </table>
+    <p id="empty-state" class="empty-state">No scans yet. Scanned items will appear here live.</p>
+  </section>
+
+  <!-- DONE SCREEN -->
+  <section id="done-screen" class="screen hidden">
+    <div class="start-wrap">
+      <h1>Stock Take Complete</h1>
+      <p class="subtitle" id="done-summary">Downloaded.</p>
+      <button id="new-stocktake-btn" class="btn btn-primary btn-huge">Start New Stock Take</button>
+    </div>
+  </section>
+
+  <!-- Confirm dialog for destructive actions -->
+  <div id="confirm-overlay" class="overlay hidden">
+    <div class="confirm-box">
+      <p id="confirm-message">Are you sure?</p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-ok" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
