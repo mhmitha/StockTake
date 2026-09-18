@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple barcode-bars glyph, kept inside the 66dp adaptive-icon safe zone. -->
+    <path android:fillColor="#4F8CFF" android:pathData="M27,27h4v54h-4z" />
+    <path android:fillColor="#4F8CFF" android:pathData="M34,27h7v54h-7z" />
+    <path android:fillColor="#4F8CFF" android:pathData="M44,27h3v54h-3z" />
+    <path android:fillColor="#4F8CFF" android:pathData="M50,27h6v54h-6z" />
+    <path android:fillColor="#4F8CFF" android:pathData="M59,27h3v54h-3z" />
+    <path android:fillColor="#4F8CFF" android:pathData="M65,27h7v54h-7z" />
+    <path android:fillColor="#4F8CFF" android:pathData="M75,27h4v54h-4z" />
+</vector>

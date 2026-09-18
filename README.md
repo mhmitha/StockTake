@@ -62,3 +62,22 @@ Apache-2.0 licensed — see `vendor/LICENSE-xlsx.txt`), named
 `stocktake_YYYY-MM-DD_HHmm.xlsx`, with one row per EAN sorted numerically.
 The EAN column is stored as text so leading zeros and long barcodes are
 never corrupted when opened in Excel.
+
+## Android app
+
+The `android/` folder wraps this same web app (it copies `index.html`,
+`styles.css`, `app.js` and `vendor/` in at build time — there's no separate
+copy to keep in sync) in a minimal WebView shell so it installs and runs
+like a normal Android app, with the exported spreadsheet saved straight to
+the phone's Downloads folder.
+
+Every push to this repo builds a debug APK via GitHub Actions
+(`.github/workflows/build-apk.yml`) and publishes it to the
+[`apk-latest` release](../../releases/tag/apk-latest) — download
+`app-debug.apk` from there directly on your phone and tap it to install
+(Android will prompt you to allow installing from that source the first
+time).
+
+To build it yourself instead: open the `android/` folder in Android Studio,
+or run `./gradlew assembleDebug` from inside it on a machine with the
+Android SDK installed.

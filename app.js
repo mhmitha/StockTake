@@ -378,7 +378,16 @@
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Stock Take');
     const filename = `stocktake_${formatTimestamp(new Date())}.xlsx`;
-    XLSX.writeFile(wb, filename);
+
+    // Inside the Android wrapper app, a blob: download from a WebView has
+    // nowhere to go — hand the bytes to the native side instead, which
+    // writes them straight to the device's Downloads folder.
+    if (window.AndroidStockTake && window.AndroidStockTake.saveXlsx) {
+      const base64 = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+      window.AndroidStockTake.saveXlsx(base64, filename);
+    } else {
+      XLSX.writeFile(wb, filename);
+    }
     return filename;
   }
 

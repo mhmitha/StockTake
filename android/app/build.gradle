@@ -1,0 +1,38 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'com.stocktake.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.stocktake.app'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+}
+
+// The web app lives at the repo root (index.html, styles.css, app.js,
+// vendor/) so the browser deployment and this Android app share one
+// source of truth. Pull a fresh copy into assets before every build
+// instead of maintaining a second copy by hand.
+tasks.register('copyWebAssets', Copy) {
+    from(rootProject.file('..')) {
+        include 'index.html', 'styles.css', 'app.js', 'vendor/xlsx.full.min.js'
+    }
+    into 'src/main/assets'
+}
+
+tasks.named('preBuild').configure {
+    dependsOn 'copyWebAssets'
+}
