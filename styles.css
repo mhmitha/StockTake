@@ -144,17 +144,20 @@ body {
   align-items: stretch;
 }
 
+.scan-pinned {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
 .scan-header {
   display: flex;
   align-items: center;
   gap: 1.2rem;
   padding: 0.6rem 0.2rem 1rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1rem;
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 5;
 }
 
 .stat {
